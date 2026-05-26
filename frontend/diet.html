@@ -127,6 +127,80 @@
         transform: scale(1) translateY(0);
     }
 }
+
+.logout-modal{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(6px);
+}
+
+.logout-box{
+    background: #111827;
+    padding: 35px;
+    border-radius: 18px;
+    text-align: center;
+    width: 380px;   /* ⬆ bigger box */
+    color: white;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    transform: scale(1);
+    transition: all 0.25s ease;
+}
+
+/* Title */
+.logout-box h3{
+    margin-bottom: 12px;
+    font-size: 2rem;   /* ⬆ bigger text */
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Description */
+.logout-box p{
+    font-size: 1.2rem;  /* ⬆ clearer text */
+    opacity: 0.85;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+/* Buttons container */
+.logout-actions{
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Buttons */
+.btn-cancel, .btn-logout{
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.2rem;   /* ⬆ button text bigger */
+    transition: 0.2s ease;
+}
+
+/* Hover effects */
+.btn-cancel:hover{
+    background: #4b5563;
+}
+
+.btn-logout:hover{
+    background: #dc2626;
+    transform: scale(1.03);
+}
+
+/* Hidden state */
+.hidden{
+    display: none;
+}
+
     </style>
 </head>
 <body>
@@ -584,6 +658,46 @@ async function undoDeleteDietLog() {
     }
 }
     </script>
+    <!-- Logout Confirmation Modal -->
+<div id="logout-modal" class="logout-modal hidden">
+    <div class="logout-box">
+        <h3>Logout?</h3>
+        <p>Are you sure you want to leave FitAI?</p>
+
+        <div class="logout-actions">
+            <button class="btn-cancel" onclick="closeLogoutModal()">
+                Cancel
+            </button>
+
+            <button class="btn-logout" onclick="confirmLogout()">
+                Logout
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function logout() {
+        document.getElementById('logout-modal').classList.remove('hidden');
+    }
+
+    function closeLogoutModal() {
+        document.getElementById('logout-modal').classList.add('hidden');
+    }
+
+    function confirmLogout() {
+
+        // Remove token/session
+        localStorage.removeItem('token');
+
+        // If you store anything else
+        localStorage.removeItem('user');
+        localStorage.removeItem('lastLiveSession');
+
+        // Redirect to login page
+        window.location.href = 'index.html';
+    }
+</script>
    
     <!-- Delete Confirmation Modal -->
 <div id="delete-modal" style="
@@ -674,5 +788,6 @@ async function undoDeleteDietLog() {
         </div>
     </div>
 </div>
+
 </body>
 </html>

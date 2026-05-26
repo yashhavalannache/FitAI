@@ -80,6 +80,38 @@
 .hidden{
     display: none;
 }
+
+.custom-select{
+
+    background:#2b2f3f
+    url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>")
+    no-repeat right 16px center;
+
+    color:#ffffff !important;
+
+    border:1px solid rgba(255,255,255,0.12);
+
+    border-radius:16px;
+
+    padding:1rem;
+
+    width:100%;
+
+    font-size:1rem;
+
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+
+    cursor:pointer;
+}
+
+.custom-select option{
+
+    background:#2b2f3f !important;
+
+    color:#ffffff !important;
+}
 </style>
 </head>
 <body>
@@ -137,7 +169,7 @@
 
                 <div class="form-group">
                     <label>Primary Goal</label>
-                    <select id="p-goal" required>
+                    <select id="p-goal" class="custom-select" required>
                         <option value="Weight Loss">Weight Loss</option>
                         <option value="Muscle Gain">Muscle Gain</option>
                         <option value="Maintenance">Maintenance</option>
@@ -146,7 +178,7 @@
                 
                 <div class="form-group">
                     <label>Experience Level</label>
-                    <select id="p-experience" required>
+                    <select id="p-experience" class="custom-select" required>
                         <option value="Beginner">Beginner</option>
                         <option value="Intermediate">Intermediate</option>
                         <option value="Advanced">Advanced</option>

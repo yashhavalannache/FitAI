@@ -127,7 +127,7 @@ def get_diet_recommendation(weight: float, height_cm: float, age: int, gender: s
         return result
         
     # Fallback to Dynamic AI Diet Generation using Gemini
-    gemini_key = os.getenv("GEMINI_API_KEY")
+    gemini_key = os.getenv("AIzaSyDgfteqj8yTpZ0wxACDbdAvwTAtpPQTZXI")
     if HAS_GENAI and gemini_key:
         try:
             genai.configure(api_key=gemini_key)

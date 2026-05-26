@@ -348,7 +348,7 @@ textarea{
 
     border-radius:16px;
 
-    background:rgba(255,255,255,0.10);
+    background:rgba(17,24,39,0.92);
 
     border:1px solid rgba(255,255,255,0.12);
 
@@ -357,6 +357,15 @@ textarea{
     font-size:1rem;
 
     transition:0.3s ease;
+
+   
+}
+
+select option{
+
+    background:#111827;
+
+    color:white;
 }
 
 input::placeholder,
@@ -381,6 +390,48 @@ textarea:focus{
     color:var(--primary);
 }
 
+select{
+    background-color:#111827 !important;
+    color:white !important;
+}
+
+select option{
+    background-color:#111827 !important;
+    color:white !important;
+}
+
+select:focus{
+    background-color:#111827 !important;
+    color:white !important;
+}
+
+select{
+
+    width:100%;
+
+    padding:1rem;
+
+    border-radius:16px;
+
+    background:#2d3142 !important;
+
+    color:white !important;
+
+    border:1px solid rgba(255,255,255,0.12);
+
+    appearance:none;
+
+    -webkit-appearance:none;
+
+    -moz-appearance:none;
+}
+
+select option{
+
+    background:#2d3142 !important;
+
+    color:white !important;
+}
 /* =========================
    BUTTONS
 ========================= */
@@ -993,11 +1044,11 @@ textarea:focus{
 
 .logout-box h3{
     margin-bottom: 10px;
-    font-size: 1.3rem;
+    font-size: 2rem;
 }
 
 .logout-box p{
-    font-size: 0.95rem;
+    font-size: 1 rem;
     opacity: 0.8;
     margin-bottom: 20px;
 }
