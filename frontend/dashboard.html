@@ -84,6 +84,203 @@
     display: none;
 }
 
+
+/* =========================
+   MOTIVATION WIDGET
+========================= */
+
+.motivation-widget{
+
+    grid-column:span 12;
+
+    position:relative;
+
+    overflow:hidden;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    gap:2rem;
+max-height: 200px; /* Set a max height to prevent overflow */
+    padding:1.2rem 2rem;
+
+    border-radius:32px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(154, 105, 233, 0.65),
+            rgba(125, 166, 231, 0.88),
+            rgba(222, 112, 230, 0.812)
+        );
+
+    border:1px solid rgba(255,255,255,0.12);
+
+    box-shadow:
+        0 20px 45px rgba(0,0,0,0.45);
+
+    backdrop-filter:blur(20px);
+
+    transition:0.4s ease;
+}
+.motivation-widget:hover{
+
+    transform:translateY(-6px);
+background:
+        linear-gradient(
+            135deg,
+            rgba(154, 105, 233, 0.65),
+            rgba(125, 166, 231, 0.88),
+            rgba(222, 112, 230, 0.812)
+        );
+    box-shadow:
+        0 20px 45px rgba(0,0,0,0.45);
+}
+
+/* Glow Orbs */
+
+.motivation-orb{
+
+    position:absolute;
+
+    border-radius:50%;
+
+    filter:blur(90px);
+
+    opacity:0.55;
+
+    animation:floatOrb 8s ease-in-out infinite;
+}
+
+.orb1{
+    width:180px;
+    height:180px;
+}
+
+.orb2{
+    width:150px;
+    height:150px;
+}
+
+/* Content */
+
+.motivation-content{
+    position:relative;
+    z-index:2;
+}
+
+.motivation-badge{
+
+    display:inline-block;
+
+    padding:0.45rem 1rem;
+
+    border-radius:999px;
+
+    background:rgba(255,255,255,0.12);
+
+    border:1px solid rgba(255,255,255,0.15);
+
+    margin-bottom:1.2rem;
+
+    font-size:0.85rem;
+    font-weight:700;
+
+    color:#fff;
+}
+
+.motivation-quote{
+
+    max-width:720px;
+
+    font-size:1.85rem;
+
+    line-height:1.5;
+
+    margin-bottom:1rem;
+
+    color:white;
+
+    text-shadow:
+        0 0 25px rgba(255,255,255,0.08);
+}
+
+.motivation-author{
+
+    font-size:1rem;
+
+    color:#67e8f9;
+
+    font-weight:700;
+
+    letter-spacing:0.5px;
+}
+
+/* Button */
+
+.motivation-btn{
+
+    width:auto;
+
+    z-index:2;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4704e4,
+            #52f34f
+        );
+
+    border:none;
+
+    box-shadow:
+        0 10px 25px rgba(139,92,246,0.35);
+}
+
+.motivation-btn:hover{
+
+    transform:translateY(-3px) scale(1.03);
+
+    box-shadow:
+        0 18px 35px rgba(130, 219, 235, 0.35);
+}
+
+/* Animation */
+
+@keyframes floatOrb{
+
+    0%{
+        transform:translateY(0px);
+    }
+
+    50%{
+        transform:translateY(18px);
+    }
+
+    100%{
+        transform:translateY(0px);
+    }
+}
+
+/* Responsive */
+
+@media(max-width:768px){
+
+    .motivation-widget{
+
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .motivation-quote{
+        font-size:1.45rem;
+    }
+}
+
+
+
+
     </style>
     <script src="ui.js"></script>
 </head>
@@ -122,6 +319,36 @@
         </div>
 
         <div class="bento-grid">
+          <!-- AI Motivation Widget -->
+<div class="bento-item glass-panel motivation-widget">
+
+    <!-- Animated Glow Orbs -->
+    <div class="motivation-orb orb1"></div>
+    <div class="motivation-orb orb2"></div>
+
+    <!-- Left Content -->
+    <div class="motivation-content">
+
+        <div class="motivation-badge">
+            ✨ AI Motivation
+        </div>
+
+        <h2 id="daily-quote" class="motivation-quote">
+            “Discipline is choosing between what you want now and what you want most.”
+        </h2>
+
+        <p id="quote-author" class="motivation-author">
+            — FitAI Coach
+        </p>
+
+    </div>
+
+    <!-- Button -->
+    <button class="btn motivation-btn" onclick="generateQuote()">
+        🔄 New Quote
+    </button>
+
+</div>
             <!-- Fitness Score Widget -->
             <div class="bento-item glass-panel" style="grid-column: span 4; grid-row: span 1; justify-content: center; align-items: center; text-align: center;">
                 <h3 style="color: var(--text-muted); font-size: 1rem;">AI Fitness Score</h3>
@@ -211,7 +438,66 @@
                 </div>
             </div>
         </div>
+       
+
+<!-- Spotify Workout Widget -->
+<div class="bento-item glass-panel"
+     style="grid-column: span 12; grid-row: span 2; overflow:hidden;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+
+        <div>
+            <h3 style="display:flex; align-items:center; gap:0.6rem;">
+                <i data-lucide="music-4" style="color:#1DB954;"></i>
+                Workout Beats
+            </h3>
+
+            <p style="margin:0; font-size:0.95rem;">
+                Power your grind with curated workout playlists 🎧
+            </p>
+        </div>
+
+        <a href="https://open.spotify.com/genre/workout-page"
+           target="_blank"
+           class="btn btn-outline"
+           style="width:auto; border-color:#1DB954; color:#1DB954;">
+            Open Spotify
+        </a>
     </div>
+
+    <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+        gap:1rem;
+    ">
+
+        <!-- Playlist 1 -->
+        <iframe style="border-radius:18px"
+            src="https://open.spotify.com/embed/playlist/37i9dQZF1DX70RN3TfWWJh?utm_source=generator"
+            width="100%"
+            height="352"
+            frameBorder="0"
+            allowfullscreen=""
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy">
+        </iframe>
+
+        <!-- Playlist 2 -->
+        <iframe style="border-radius:18px"
+            src="https://open.spotify.com/embed/playlist/37i9dQZF1DX76Wlfdnj7AP?utm_source=generator"
+            width="100%"
+            height="352"
+            frameBorder="0"
+            allowfullscreen=""
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy">
+        </iframe>
+
+    </div>
+    
+</div>
+    </div>
+
 
     <script src="script.js"></script>
     <script src="progress.js"></script>
@@ -301,6 +587,57 @@
         if (getToken()) {
             loadDashboard();
         }
+
+        const quotes = [
+
+{
+text:"Discipline is choosing between what you want now and what you want most.",
+author:"FitAI Coach"
+},
+
+{
+text:"The body achieves what the mind believes.",
+author:"Napoleon Hill"
+},
+
+{
+text:"Small daily improvements become stunning results.",
+author:"Robin Sharma"
+},
+
+{
+text:"Your future physique is built by today's consistency.",
+author:"FitAI AI"
+},
+
+{
+text:"Motivation gets you started. Discipline keeps you legendary.",
+author:"FitAI AI"
+},
+
+{
+text:"Champions train even when nobody is watching.",
+author:"Unknown"
+},
+
+{
+text:"One more rep. One more set. One step closer.",
+author:"FitAI Coach"
+}
+
+];
+
+function generateQuote(){
+
+    const random =
+    quotes[Math.floor(Math.random() * quotes.length)];
+
+    document.getElementById('daily-quote').textContent =
+    `"${random.text}"`;
+
+    document.getElementById('quote-author').textContent =
+    `— ${random.author}`;
+}
         
     </script>
     <!-- Logout Confirmation Modal -->

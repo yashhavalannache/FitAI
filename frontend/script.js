@@ -24,11 +24,9 @@ function performLogout() {
 function checkAuth() {
     const publicPages = ['login.html', 'register.html', 'index.html', ''];
     const path = window.location.pathname.split('/').pop();
-    
+
     if (!getToken() && !publicPages.includes(path)) {
         window.location.href = 'login.html';
-    } else if (getToken() && (path === 'login.html' || path === 'register.html')) {
-        window.location.href = 'dashboard.html';
     }
 }
 
