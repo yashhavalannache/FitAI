@@ -2,7 +2,7 @@
 
 A modern, full-stack AI fitness application that combines a multi-layered neural network recommendation engine, real-time pose tracking, Retrieval-Augmented Generation (RAG), and live API integrations to provide truly adaptive, personalised workout and diet plans.
 <p align="center">
-  <img src=/images/banner.png" width="100%" alt="AI Fitness Trainer Banner">
+  <img src="./frontend/images/banner.png" width="100%" alt="AI Fitness Trainer Banner">
 </p>
 
 <h1 align="center">🏋️ AI Fitness Trainer</h1>
