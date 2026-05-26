@@ -561,3 +561,23 @@ def delete_diet_log(
     return {"detail": "Deleted successfully"}
 
 
+@app.post("/restore-diet-log")
+def restore_diet_log(
+    data: dict,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(database.get_db)
+):
+    new_log = models.DietLog(
+        user_id=current_user.id,
+        food_name=data["food_name"],
+        calories=data["calories"],
+        protein=data.get("protein", 0),
+        carbs=data.get("carbs", 0),
+        fat=data.get("fat", 0)
+    )
+
+    db.add(new_log)
+    db.commit()
+    db.refresh(new_log)
+
+    return new_log

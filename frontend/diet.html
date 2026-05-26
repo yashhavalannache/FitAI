@@ -116,6 +116,17 @@
             color: var(--text-muted);
             margin: 2rem 0 1.25rem;
         }
+
+        @keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.85) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
     </style>
 </head>
 <body>
@@ -226,6 +237,7 @@
 
     <script src="script.js"></script>
     <script>
+        
         lucide.createIcons();
 
         async function loadDiet() {
@@ -371,41 +383,43 @@
                 }
                 
                 listEl.innerHTML = logs.map(log => `
-    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-light);">
-    
+<div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-light);">
+
     <div>
         <div style="font-weight: 600; font-size: 0.95rem;">
             ${log.food_name}
         </div>
+
         <div style="font-size: 0.75rem; color: var(--text-muted);">
-            Protein: ${log.protein ?? 0}g | Carbs: ${log.carbs ?? 0}g | Fat: ${log.fat ?? 0}g
+            Protein: ${log.protein ?? 0}g |
+            Carbs: ${log.carbs ?? 0}g |
+            Fat: ${log.fat ?? 0}g
         </div>
     </div>
 
     <div style="display:flex; align-items:center; gap:10px;">
-        
+
         <div class="recipe-cal-pill" style="margin: 0;">
             <i data-lucide="flame" style="width:12px;height:12px;"></i>
             ${log.calories} kcal
         </div>
 
-        <button onclick="deleteDietLog(${log.id})"
-            style="
-                background: rgba(255,0,0,0.15);
-                border: 1px solid rgba(255,0,0,0.3);
-                color: red;
-                padding: 6px 10px;
-                border-radius: 6px;
-                cursor: pointer;
-                font-size: 12px;
-            ">
-            Delete
-        </button>
+        <button onclick="openDeleteModal(${log.id})"
+    style="
+        background: rgba(255,0,0,0.15);
+        border: 1px solid rgba(255,0,0,0.3);
+        color: red;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+    ">
+    Delete
+</button>
 
     </div>
+
 </div>
-
-    </div>
 `).join('');
                 lucide.createIcons();
                 
@@ -420,16 +434,245 @@
             loadDiet();
             loadTodayDietLogs();
         }
+
+       let selectedDietLogId = null;
+        
+let deletedLogBackup = null;
+let deleteTimeout = null;
+
+function openDeleteModal(logId) {
+    selectedDietLogId = logId;
+
+    document.getElementById('delete-modal').style.display = 'flex';
+
+    lucide.createIcons();
+}
+
+function closeDeleteModal() {
+    selectedDietLogId = null;
+
+    document.getElementById('delete-modal').style.display = 'none';
+}
+
+async function confirmDeleteAction() {
+    if (!selectedDietLogId) return;
+
+    try {
+        // Fetch current logs
+        const logs = await apiCall('/diet-logs');
+
+        // Store backup
+        deletedLogBackup = logs.find(
+            log => log.id === selectedDietLogId
+        );
+
+        // Delete from backend
+        await apiCall(`/diet-log/${selectedDietLogId}`, 'DELETE');
+
+        closeDeleteModal();
+
+        // Refresh UI immediately
+        loadTodayDietLogs();
+
+        // Show undo toast
+        showUndoToast();
+
+    } catch (err) {
+        console.error(err);
+
+        showToast("Failed to delete meal", "error");
+    }
+}
+
+function showUndoToast() {
+
+    // Remove existing toast if present
+    const oldToast = document.getElementById('undo-toast');
+    if (oldToast) oldToast.remove();
+
+    const toast = document.createElement('div');
+
+    toast.id = 'undo-toast';
+
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: rgba(17,24,39,0.96);
+        border: 1px solid var(--border-light);
+        color: white;
+        padding: 14px 18px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        z-index: 99999;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        animation: modalPop 0.25s ease;
+    `;
+
+    toast.innerHTML = `
+        <span>Meal deleted</span>
+
+        <button id="undo-btn"
+            style="
+                border:none;
+                background: var(--accent);
+                color:black;
+                font-weight:700;
+                padding:6px 12px;
+                border-radius:8px;
+                cursor:pointer;
+            ">
+            Undo
+        </button>
+    `;
+
+    document.body.appendChild(toast);
+
+    document.getElementById('undo-btn').onclick = undoDeleteDietLog;
+
+    // Auto remove after 3 sec
+    deleteTimeout = setTimeout(() => {
+        toast.remove();
+        deletedLogBackup = null;
+    }, 3000);
+}
+
+async function undoDeleteDietLog() {
+
+    if (!deletedLogBackup) return;
+
+    try {
+
+        await apiCall('/restore-diet-log', 'POST', {
+            food_name: deletedLogBackup.food_name,
+            calories: deletedLogBackup.calories,
+            protein: deletedLogBackup.protein,
+            carbs: deletedLogBackup.carbs,
+            fat: deletedLogBackup.fat
+        });
+
+        clearTimeout(deleteTimeout);
+
+        const toast = document.getElementById('undo-toast');
+
+        if (toast) toast.remove();
+
+        deletedLogBackup = null;
+
+        showToast("Meal restored", "success");
+
+        loadTodayDietLogs();
+
+    } catch (err) {
+
+        console.error(err);
+
+        showToast("Failed to restore meal", "error");
+    }
+}
+
         async function deleteDietLog(logId) {
     try {
-        await apiCall(`/diet-logs/${logId}`, 'DELETE');
+        await apiCall(`/diet-log/${logId}`, 'DELETE');
         showToast("Meal deleted successfully", "success");
-        loadTodayDietLogs(); // refresh list
+        loadTodayDietLogs();
     } catch (err) {
         console.error(err);
         showToast("Failed to delete meal", "error");
     }
 }
     </script>
+   
+    <!-- Delete Confirmation Modal -->
+<div id="delete-modal" style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+">
+
+    <div style="
+        width: 90%;
+        max-width: 400px;
+        background: rgba(17,24,39,0.95);
+        border: 1px solid var(--border-light);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        animation: modalPop 0.25s ease;
+    ">
+
+        <div style="
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 1.2rem;
+            border-radius: 50%;
+            background: rgba(255,0,0,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">
+            <i data-lucide="trash-2"
+               style="width:32px;height:32px;color:#ef4444;"></i>
+        </div>
+
+        <h2 style="
+            text-align:center;
+            margin-bottom:0.6rem;
+            font-size:1.4rem;
+            font-weight:800;
+        ">
+            Delete Meal Log?
+        </h2>
+
+        <p style="
+            text-align:center;
+            color:var(--text-muted);
+            line-height:1.6;
+            margin-bottom:1.8rem;
+            font-size:0.95rem;
+        ">
+            This action cannot be undone.
+        </p>
+
+        <div style="display:flex; gap:12px;">
+
+            <button onclick="closeDeleteModal()"
+                style="
+                    flex:1;
+                    padding:12px;
+                    border-radius:12px;
+                    border:1px solid var(--border-light);
+                    background: rgba(255,255,255,0.05);
+                    color:white;
+                    cursor:pointer;
+                    font-weight:600;
+                ">
+                Cancel
+            </button>
+
+            <button onclick="confirmDeleteAction()"
+                style="
+                    flex:1;
+                    padding:12px;
+                    border:none;
+                    border-radius:12px;
+                    background:#ef4444;
+                    color:white;
+                    cursor:pointer;
+                    font-weight:700;
+                ">
+                Delete
+            </button>
+
+        </div>
+    </div>
+</div>
 </body>
 </html>
