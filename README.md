@@ -22,49 +22,6 @@ An intelligent full-stack fitness platform powered by Artificial Intelligence, D
 
 ---
 
-# 📖 Overview
-
-AI Fitness Trainer is a modern AI-powered fitness ecosystem that combines Deep Learning, Retrieval-Augmented Generation (RAG), Machine Learning, and real-time pose estimation to deliver adaptive workout and nutrition recommendations.
-
-Built using FastAPI, PyTorch, MediaPipe, Gemini AI, and scikit-learn, the platform provides:
-
-- 🧠 Intelligent workout generation
-- 🍽️ Personalized diet planning
-- 📷 Real-time exercise coaching
-- 📊 Advanced analytics tracking
-- 🏆 Gamified fitness challenges
-- 🔊 Live voice feedback
-- 💪 Progressive overload recommendations
-
-The system is designed with a layered AI architecture that remains functional even when external APIs fail, making it robust, scalable, and production-inspired.
-
----
-
-# ✨ Core Features
-
-## 🧠 AI Recommendation System
-
-- Gemini-powered personalized workout and diet generation
-- TF-IDF Retrieval-Augmented Generation (RAG) pipeline
-- Hallucination prevention using curated exercise retrieval
-- Context-aware workout planning
-- Equipment-aware recommendations
-- Goal-based adaptive training
-
----
-
-## 🤖 Deep Learning Fallback Engine
-
-- Custom PyTorch Seq2Seq Encoder-Decoder model
-- Generates workout sequences locally
-- Automatically activates when Gemini API fails
-- Trained on categorized exercise datasets
-- Fully offline-capable fallback recommendation system
-
----
-
-
-
 ## Setup Instructions
 
 ### 1. Backend Setup
