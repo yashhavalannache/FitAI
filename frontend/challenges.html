@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenges &amp; Badges — FitAI</title>
+    <meta name="description" content="Complete fitness challenges, earn badges, and maintain daily streaks on FitAI.">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/logo.png">
+    <style>
+        .challenge-card {
+            position: relative;
+            overflow: hidden;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+        }
+        .challenge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+        .challenge-card.completed {
+            border-color: rgba(16,185,129,0.45);
+            background: rgba(16,185,129,0.04);
+        }
+
+        /* Ribbon for completed */
+        .ribbon {
+            position: absolute;
+            top: 0; right: 0;
+            background: var(--accent);
+            color: #000;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 4px 14px;
+            border-bottom-left-radius: 10px;
+        }
+
+        .challenge-icon-wrap {
+            width: 52px; height: 52px; min-width: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(59,130,246,0.12);
+            font-size: 1.6rem;
+        }
+
+        .c-progress-track {
+            height: 10px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        .c-progress-fill {
+            height: 100%;
+            border-radius: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 1s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        .badge-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 1.25rem 1rem;
+            min-width: 110px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: default;
+        }
+        .badge-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(16,185,129,0.2);
+            border-color: rgba(16,185,129,0.35);
+        }
+        .badge-card img {
+            width: 52px; height: 52px;
+        }
+        .badge-card .badge-name { font-size: 0.8rem; font-weight: 700; color: white; }
+        .badge-card .badge-date { font-size: 0.72rem; color: var(--text-muted); }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 3rem;
+            color: var(--text-muted);
+            text-align: center;
+            border: 2px dashed var(--border-light);
+            border-radius: 20px;
+        }
+
+        .section-heading {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 1.15rem; font-weight: 700; color: var(--accent);
+            margin-bottom: 1.25rem;
+        }
+
+        .challenges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+         .logout-modal{
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(6px);
+        }
+
+        .logout-box{
+            background: #111827;
+            padding: 35px;
+            border-radius: 18px;
+            text-align: center;
+            width: 380px;
+            color: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            transform: scale(1);
+            transition: all 0.25s ease;
+        }
+
+        .logout-box h3{
+            margin-bottom: 12px;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .logout-box p{
+            font-size: 1.2rem;
+            opacity: 0.85;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .logout-actions{
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .btn-cancel,
+        .btn-logout{
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.2rem;
+            transition: 0.2s ease;
+        }
+
+        .btn-cancel:hover{
+            background: #4b5563;
+        }
+
+        .btn-logout:hover{
+            background: #dc2626;
+            transform: scale(1.03);
+        }
+
+        .hidden{
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="dashboard.html" class="logo">FitAI.</a>
+        <div class="links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="planner.html">Weekly Plan</a>
+            <a href="workouts.html">Workouts</a>
+            <a href="diet.html">Diet</a>
+            <a href="analytics.html">Analytics</a>
+            <a href="challenges.html">Challenges</a>
+            <a href="profile.html">Profile</a>
+            <a href="live_coach.html" class="btn btn-accent" style="padding: 0.5rem 1rem; width:auto;">
+                <i data-lucide="video" style="width:16px;height:16px;"></i> Live Coach
+            </a>
+            <!-- UPDATED LOGOUT BUTTON -->
+            <a href="#" onclick="openLogoutModal(event); return false;" style="margin-left:1rem;">
+    Logout
+</a>
+        </div>
+    </nav>
+
+    <div class="container" id="challenges-content" style="display: none;">
+
+        <!-- Page header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 class="gradient-text">Challenges &amp; Badges</h1>
+                <p>Complete goals to earn badges and maintain your winning streak.</p>
+            </div>
+            <!-- Quick streak chip -->
+            <div style="display: flex; align-items: center; gap: 10px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 30px; padding: 8px 20px;">
+                <i data-lucide="flame" style="width:20px;height:20px; color:#f59e0b;"></i>
+                <span style="font-weight: 700; font-size: 1.1rem;" id="streak-chip">-- day streak</span>
+            </div>
+        </div>
+
+        <!-- Active Challenges -->
+        <div class="section-heading">
+            <i data-lucide="target" style="width:20px;height:20px;"></i> Active Challenges
+        </div>
+        <div class="challenges-grid" id="challenges-grid">
+            <!-- rendered by JS -->
+        </div>
+
+        <!-- Earned Badges -->
+        <div class="section-heading" style="margin-top: 3rem;">
+            <i data-lucide="shield-check" style="width:20px;height:20px;"></i> Earned Badges
+        </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;" id="badges-container">
+            <!-- rendered by JS -->
+        </div>
+    </div>
+
+       <!-- LOGOUT MODAL -->
+    <div id="logoutModal" class="logout-modal hidden">
+
+        <div class="logout-box">
+
+            <h3>Leaving so soon?</h3>
+
+            <p>Are you sure you want to logout from FitAI?</p>
+
+            <div class="logout-actions">
+
+                <button class="btn-cancel" onclick="closeLogoutModal()">
+                    Cancel
+                </button>
+
+                <button class="btn-logout" onclick="confirmLogout()">
+                    Logout
+                </button>
+
+            </div>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+    <script>
+        lucide.createIcons();
+
+        async function loadChallenges() {
+            showLoadingSpinner('challenges-content');
+            try {
+                document.getElementById('challenges-content').style.display = 'block';
+
+                const [challengesData, badgesData, dashData] = await Promise.all([
+                    apiCall('/challenges'),
+                    apiCall('/badges'),
+                    apiCall('/dashboard-data').catch(() => ({ streak: 0 }))
+                ]);
+
+                // Streak chip
+                document.getElementById('streak-chip').textContent =
+                    (dashData.streak || 0) + ' day streak 🔥';
+
+                // --- Challenges ---
+                const cGrid = document.getElementById('challenges-grid');
+                if (!challengesData || challengesData.length === 0) {
+                    cGrid.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1/-1;">
+                            <i data-lucide="inbox" style="width:40px;height:40px;"></i>
+                            <p>No challenges available yet.<br>Log more workouts to unlock them!</p>
+                        </div>`;
+                } else {
+                    cGrid.innerHTML = challengesData.map((uc, i) => {
+                        const c = uc.challenge;
+                        const percent = Math.min(100, Math.round((uc.progress / c.target_value) * 100));
+                        const icon = c.metric === 'workouts' ? 'dumbbell' :
+                                     c.metric === 'calories' ? 'flame' : 'target';
+
+                        return `
+                        <div class="challenge-card ${uc.completed ? 'completed' : ''}" 
+                             style="animation: fadeInUp 0.5s ${i * 0.08}s ease-out both;">
+                            ${uc.completed ? '<div class="ribbon">✓ DONE</div>' : ''}
+                            <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                                <div class="challenge-icon-wrap" style="${uc.completed ? 'background:rgba(16,185,129,0.15);' : ''}">
+                                    ${c.badge_url
+                                        ? `<img src="${c.badge_url}" style="width:36px;height:36px; ${uc.completed ? '' : 'filter: grayscale(1) opacity(0.5);'}">`
+                                        : `<i data-lucide="${icon}" style="width:24px;height:24px; color:${uc.completed ? 'var(--accent)' : 'var(--text-muted)'};"></i>`
+                                    }
+                                </div>
+                                <div>
+                                    <h3 style="margin: 0 0 2px; font-size: 1rem;">${c.title}</h3>
+                                    <p style="margin: 0; font-size: 0.82rem; color: var(--text-muted);">${c.description}</p>
+                                </div>
+                            </div>
+                            <div class="c-progress-track">
+                                <div class="c-progress-fill" id="cfill-${i}" style="width: 0%;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.8rem; color: var(--text-muted);">
+                                <span>${uc.progress} / ${c.target_value} ${c.metric}</span>
+                                <span style="color: ${uc.completed ? 'var(--accent)' : 'var(--text-muted)'}; font-weight: 700;">${percent}%</span>
+                            </div>
+                        </div>`;
+                    }).join('');
+
+                    // Animate bars after render
+                    challengesData.forEach((uc, i) => {
+                        const c = uc.challenge;
+                        const percent = Math.min(100, Math.round((uc.progress / c.target_value) * 100));
+                        setTimeout(() => {
+                            const el = document.getElementById(`cfill-${i}`);
+                            if (el) el.style.width = percent + '%';
+                        }, 100 + i * 60);
+                    });
+                }
+
+                // --- Badges ---
+                const bContainer = document.getElementById('badges-container');
+                if (!badgesData || badgesData.length === 0) {
+                    bContainer.innerHTML = `
+                        <div class="empty-state" style="width:100%;">
+                            <i data-lucide="award" style="width:40px;height:40px;"></i>
+                            <p>No badges earned yet.<br>Complete challenges to unlock your first badge!</p>
+                        </div>`;
+                } else {
+                    bContainer.innerHTML = badgesData.map((b, i) => `
+                        <div class="badge-card" style="animation: fadeInUp 0.5s ${i * 0.07}s ease-out both;"
+                             data-tip="${b.name}">
+                            <img src="${b.icon_url}" alt="${b.name}"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                            <i data-lucide="award" style="display:none; width:40px;height:40px; color:var(--accent);"></i>
+                            <span class="badge-name">${b.name}</span>
+                            <span class="badge-date">${new Date(b.earned_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}</span>
+                        </div>
+                    `).join('');
+                }
+
+                lucide.createIcons();
+
+            } catch (err) {
+                console.error('Error loading challenges:', err);
+                showToast('Error loading challenges.', 'error');
+            } finally {
+                hideLoadingSpinner('challenges-content');
+            }
+        }
+
+        if (getToken()) loadChallenges();
+    </script>
+    <script>/* LOGOUT MODAL FUNCTIONS */
+
+        function openLogoutModal(event){
+
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const modal = document.getElementById("logoutModal");
+    modal.classList.remove("hidden");
+}
+
+        function closeLogoutModal(){
+
+            document.getElementById("logoutModal")
+                .classList.add("hidden");
+        }
+
+        function confirmLogout(){
+    closeLogoutModal();
+    setTimeout(() => {
+        logout();
+    }, 100);
+}
+
+        window.addEventListener("click", function(e){
+
+            const modal = document.getElementById("logoutModal");
+
+            if(e.target === modal){
+                closeLogoutModal();
+            }
+        });
+    </script>
+</body>
+</html>

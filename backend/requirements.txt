@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+scikit-learn
+pandas
+numpy
+python-multipart
+joblib
+requests
+python-dotenv
+google-generativeai
+torch

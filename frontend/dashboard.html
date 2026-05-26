@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — FitAI</title>
+    <meta name="description" content="Your AI Fitness dashboard: track workouts, streaks, 1RM progress, and earned badges at a glance.">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Include icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/logo.png">
+    <script src="ui.js"></script>
+</head>
+<body>
+    <nav>
+        <a href="dashboard.html" class="logo">FitAI.</a>
+        <div class="links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="planner.html">Weekly Plan</a>
+            <a href="workouts.html">Workouts</a>
+            <a href="diet.html">Diet</a>
+            <a href="analytics.html">Analytics</a>
+            <a href="challenges.html">Challenges</a>
+            <a href="profile.html">Profile</a>
+            <a href="live_coach.html" class="btn btn-accent" style="padding: 0.5rem 1rem; width:auto;">
+                <i data-lucide="video" style="width:16px;height:16px;"></i> Live Coach
+            </a>
+            <a href="#" onclick="logout()" style="margin-left:1rem;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container" id="dashboard-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 class="gradient-text" id="dashboard-greeting">Welcome Back 👋</h1>
+                <p id="dashboard-subheading">Ready to crush your goals today?</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="challenges.html" class="btn btn-outline" style="width:auto;" data-tip="View Challenges">
+                    <i data-lucide="trophy" style="width:16px;height:16px;"></i>
+                </a>
+                <a href="workouts.html" class="btn btn-primary" style="width: auto;">
+                    <i data-lucide="play" style="width:18px;height:18px;"></i> Start Workout
+                </a>
+            </div>
+        </div>
+
+        <div class="bento-grid">
+            <!-- Fitness Score Widget -->
+            <div class="bento-item glass-panel" style="grid-column: span 4; grid-row: span 1; justify-content: center; align-items: center; text-align: center;">
+                <h3 style="color: var(--text-muted); font-size: 1rem;">AI Fitness Score</h3>
+                <div class="metric-value" id="fitness-score">--</div>
+                <div class="badge">Top 15% this week</div>
+            </div>
+
+            <!-- Streak Widget -->
+            <div class="bento-item glass-panel" style="grid-column: span 4; grid-row: span 1; justify-content: center; align-items: center; text-align: center;">
+                <h3 style="color: var(--text-muted); font-size: 1rem;">Current Streak</h3>
+                <div class="metric-value" style="color: #f59e0b;" id="workout-streak">--</div>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">Keep it up! 🔥</div>
+            </div>
+
+            <!-- Badges Widget -->
+            <div class="bento-item glass-panel" style="grid-column: span 4; grid-row: span 1; justify-content: center; align-items: center; text-align: center; cursor: pointer;" onclick="window.location.href='challenges.html'">
+                <h3 style="color: var(--text-muted); font-size: 1rem;">Badges Earned</h3>
+                <div class="metric-value" style="color: var(--primary);" id="badge-count">--</div>
+                <div style="display: flex; gap: 5px; justify-content: center; margin-top: 5px;" id="badge-icons">
+                    <!-- filled by JS -->
+                </div>
+            </div>
+
+            <!-- Recent Live Coach Session Widget -->
+            <div class="bento-item glass-panel" style="grid-column: span 4; grid-row: span 2; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(139, 92, 246, 0.3);">
+                <div style="position: absolute; top: 0; right: 0; padding: 1rem; color: var(--purple-accent); opacity: 0.2;">
+                    <i data-lucide="activity" style="width: 80px; height: 80px;"></i>
+                </div>
+                <div style="z-index: 1;">
+                    <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--purple-accent);">
+                        <i data-lucide="video" style="width: 20px; height: 20px;"></i> 
+                        Recent Live Coach
+                    </h3>
+                    <p style="font-size: 0.9rem;">Your last AI-tracked session.</p>
+                </div>
+                
+                <div style="z-index: 1; margin-top: auto; background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: var(--text-muted);">Exercise</span>
+                        <strong id="recent-live-type">Squats</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: var(--text-muted);">Reps Completed</span>
+                        <strong style="color: var(--accent); font-size: 1.2rem;" id="recent-live-reps">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">Feedback</span>
+                        <span style="color: #34d399;" id="recent-live-feedback">Excellent Form</span>
+                    </div>
+                </div>
+                <a href="live_coach.html" class="btn btn-outline" style="margin-top: 1rem; z-index: 1; border-color: var(--purple-accent); color: white;">
+                    Start New Session
+                </a>
+            </div>
+
+            <!-- Diet Mini-Widget -->
+            <div class="bento-item glass-panel" style="grid-column: span 8; grid-row: span 1; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 2rem;">
+                <div>
+                    <h3>Daily Nutrition Target</h3>
+                    <p style="margin:0;">Based on your current goal</p>
+                </div>
+                <div style="display: flex; gap: 2rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent);"><span id="diet-calories">--</span></div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Calories (kcal)</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary);"><span id="diet-protein">--</span>g</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Protein Target</div>
+                    </div>
+                </div>
+                <a href="diet.html" class="btn btn-outline" style="width: auto;">View Plan</a>
+            </div>
+
+            <!-- 1RM PR Widget -->
+            <div class="bento-item glass-panel" style="grid-column: span 12; grid-row: span 2; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="color: var(--text-muted); font-size: 1rem;"><i data-lucide="trending-up" style="vertical-align: middle;"></i> 1RM Progress</h3>
+                    <select id="pr-exercise-select" onchange="render1RMChart(this.value, '1rm-chart')" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); color: white; padding: 5px; border-radius: 5px;">
+                        <option value="Squats">Squats</option>
+                        <option value="Bench Press">Bench Press</option>
+                        <option value="Deadlifts">Deadlifts</option>
+                    </select>
+                </div>
+                <div style="flex-grow: 1; min-height: 250px; position: relative;">
+                    <canvas id="1rm-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="progress.js"></script>
+    <script>
+        lucide.createIcons();
+        
+        async function loadDashboard() {
+            try {
+                try {
+                    const me = await apiCall('/auth/me');
+                    document.getElementById('dashboard-content').style.display = 'block';
+
+                    // Time-aware greeting
+                    const hour = new Date().getHours();
+                    const greet = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+                    const emoji = hour < 12 ? '☀️' : hour < 17 ? '💪' : '🌙';
+                    document.getElementById('dashboard-greeting').textContent = `${greet}, ${me.username || 'Athlete'} ${emoji}`;
+                    document.getElementById('dashboard-subheading').textContent =
+                        hour < 12 ? "Start strong — your workout plan is ready." :
+                        hour < 17 ? "Keep pushing — you're doing great!" :
+                        "Wind down with a solid session tonight.";
+
+                    loadRecommendations();
+                    loadAnalytics();
+                    loadRecentLiveWorkout();
+                    setTimeout(() => render1RMChart(document.getElementById('pr-exercise-select').value, '1rm-chart'), 500);
+                } catch (e) {
+                    if(e.message === "Profile not found") {
+                        window.location.href = 'profile.html';
+                    } else {
+                        throw e;
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadRecommendations() {
+            showLoadingSpinner('dashboard-content');
+            try {
+                const data = await apiCall('/recommend-workout');
+                document.getElementById('diet-calories').textContent = data.diet.daily_calories;
+                document.getElementById('diet-protein').textContent = data.diet.protein_grams;
+            } catch (err) {
+                console.error(err);
+            } finally {
+                hideLoadingSpinner('dashboard-content');
+            }
+        }
+
+        async function loadAnalytics() {
+            try {
+                const scoreData = await apiCall('/fitness-score');
+                document.getElementById('fitness-score').textContent = scoreData.fitness_score;
+
+                const dashData = await apiCall('/dashboard-data');
+                document.getElementById('workout-streak').textContent = dashData.streak + ' days';
+                
+                const badgesData = await apiCall('/badges').catch(() => []);
+                document.getElementById('badge-count').textContent = badgesData.length;
+                
+                const iconsContainer = document.getElementById('badge-icons');
+                iconsContainer.innerHTML = badgesData.slice(0, 3).map(b => `<img src="${b.icon_url}" style="width: 24px; height: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" title="${b.name}">`).join('');
+                if (badgesData.length > 3) {
+                    iconsContainer.innerHTML += `<span style="font-size: 0.8rem; color: var(--text-muted); align-self: center;">+${badgesData.length - 3}</span>`;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function loadRecentLiveWorkout() {
+            // Mocking or pulling from local storage for recent live coach data
+            const lastSession = JSON.parse(localStorage.getItem('lastLiveSession'));
+            if (lastSession) {
+                document.getElementById('recent-live-type').textContent = lastSession.type;
+                document.getElementById('recent-live-reps').textContent = lastSession.reps;
+                document.getElementById('recent-live-feedback').textContent = "Excellent Form";
+            } else {
+                document.getElementById('recent-live-type').textContent = "No recent data";
+                document.getElementById('recent-live-reps').textContent = "-";
+                document.getElementById('recent-live-feedback').textContent = "-";
+            }
+        }
+
+        if (getToken()) {
+            loadDashboard();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrition Plan — FitAI</title>
+    <meta name="description" content="Your personalized AI diet plan with calorie targets, macro breakdowns, and Edamam-powered recipe suggestions.">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/logo.png">
+    <style>
+        .macro-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .macro-chip {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .macro-chip .mac-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+        .macro-chip .mac-label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .suggestion-box {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            background: rgba(59,130,246,0.07);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .recipe-card {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .recipe-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+            border-color: rgba(59,130,246,0.3);
+        }
+        .recipe-image {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+        }
+        .recipe-body { padding: 1rem; }
+        .recipe-body h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin: 0 0 6px;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .recipe-cal-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: rgba(16,185,129,0.12);
+            color: var(--accent);
+            padding: 3px 10px;
+            border-radius: 999px;
+            margin-bottom: 10px;
+        }
+        .recipe-view-btn {
+            display: block;
+            text-align: center;
+            padding: 7px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .recipe-card:hover .recipe-view-btn {
+            background: rgba(59,130,246,0.15);
+            border-color: rgba(59,130,246,0.3);
+            color: white;
+        }
+
+        .recipes-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 2rem 0 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="dashboard.html" class="logo">FitAI.</a>
+        <div class="links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="planner.html">Weekly Plan</a>
+            <a href="workouts.html">Workouts</a>
+            <a href="diet.html">Diet</a>
+            <a href="analytics.html">Analytics</a>
+            <a href="challenges.html">Challenges</a>
+            <a href="profile.html">Profile</a>
+            <a href="live_coach.html" class="btn btn-accent" style="padding: 0.5rem 1rem; width:auto;">
+                <i data-lucide="video" style="width:16px;height:16px;"></i> Live Coach
+            </a>
+            <a href="#" onclick="logout()" style="margin-left:1rem;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container" id="diet-content" style="display: none;">
+        <div style="margin-bottom: 2rem;">
+            <h1 class="gradient-text">Nutrition Plan</h1>
+            <p>Your personalised diet recommendations based on your profile and fitness goal.</p>
+        </div>
+
+        <div class="bento-grid">
+            <!-- Calorie + Macro panel -->
+            <div class="bento-item glass-panel" style="grid-column: span 8;">
+                <h3 style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.5rem;">Daily Targets</h3>
+                <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+                    <span id="diet-calories" style="font-size: 4rem; font-weight: 800; color: var(--accent); line-height:1;">--</span>
+                    <span style="font-size: 1.1rem; color: var(--text-muted);">kcal / day</span>
+                </div>
+
+                <div class="macro-grid">
+                    <div class="macro-chip">
+                        <div class="mac-val" style="color: var(--primary);" id="diet-protein">--<span style="font-size:1rem;">g</span></div>
+                        <div class="mac-label">Protein</div>
+                    </div>
+                    <div class="macro-chip">
+                        <div class="mac-val" style="color: var(--accent);" id="diet-carbs">--<span style="font-size:1rem;">g</span></div>
+                        <div class="mac-label">Carbs</div>
+                    </div>
+                    <div class="macro-chip">
+                        <div class="mac-val" style="color: var(--purple-accent);" id="diet-fat">--<span style="font-size:1rem;">g</span></div>
+                        <div class="mac-label">Fat</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Circular progress ring -->
+            <div class="bento-item glass-panel" style="grid-column: span 4; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;">
+                <div class="circular-progress" id="cal-ring">
+                    <span class="progress-value" id="cal-pct">100%</span>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-weight: 700;">Goal Met</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Hit your targets daily</div>
+                </div>
+            </div>
+
+            <!-- NLP Diet Logger -->
+            <div class="bento-item glass-panel" style="grid-column: span 12;">
+                <h3 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    <i data-lucide="message-square" style="width:20px;height:20px; color: var(--primary);"></i> AI Meal Logger
+                </h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                    Tell AI what you ate (e.g., "I just had a bowl of oatmeal and 3 eggs"), and it will automatically extract the calories and macros.
+                </p>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="nlp-diet-input" class="form-input" placeholder="What did you eat?" style="flex: 1;" onkeypress="if(event.key === 'Enter') submitDietLog()">
+                    <button class="btn btn-accent" onclick="submitDietLog()" style="width: auto; padding: 0 1.5rem;" id="btn-log-diet">Log Meal</button>
+                </div>
+                <div id="diet-logs-container" style="margin-top: 1.5rem;">
+                    <h4 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">Today's Logs</h4>
+                    <div id="diet-logs-list" style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="color:var(--text-muted); font-size: 0.85rem;">No meals logged today.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Suggestion + Recipes -->
+            <div class="bento-item glass-panel" style="grid-column: span 12;">
+                <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="sparkles" style="width:20px;height:20px; color: var(--primary);"></i> AI Suggestion
+                </h3>
+                <div class="suggestion-box">
+                    <i data-lucide="info" style="width:20px;height:20px; color: var(--primary); flex-shrink:0; margin-top:2px;"></i>
+                    <p id="diet-suggestion" style="margin: 0; color: var(--text-main); font-size: 1rem; line-height: 1.6;"></p>
+                </div>
+
+                <div class="recipes-header">
+                    <i data-lucide="calendar" style="width:18px;height:18px;"></i>
+                    Weekly Meal Plan
+                </div>
+                
+                <div class="days-tabs" id="days-tabs" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px;">
+                    <!-- Tabs injected here -->
+                </div>
+
+                <div id="recipe-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.25rem;">
+                    <!-- Recipes injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        lucide.createIcons();
+
+        async function loadDiet() {
+            showLoadingSpinner('diet-content');
+            try {
+                await apiCall('/auth/me');
+                document.getElementById('diet-content').style.display = 'block';
+
+                const data = await apiCall('/recommend-workout');
+                const diet = data.diet;
+
+                document.getElementById('diet-calories').innerHTML = diet.daily_calories + '<span style="font-size:1.1rem; color:var(--text-muted);">kcal</span>';
+                document.getElementById('diet-protein').innerHTML = diet.protein_grams + '<span style="font-size:1rem;">g</span>';
+
+                // Estimate carbs & fat from calories
+                const cal = parseInt(diet.daily_calories) || 2000;
+                document.getElementById('diet-carbs').innerHTML = Math.round(cal * 0.45 / 4) + '<span style="font-size:1rem;">g</span>';
+                document.getElementById('diet-fat').innerHTML = Math.round(cal * 0.25 / 9) + '<span style="font-size:1rem;">g</span>';
+
+                document.getElementById('diet-suggestion').textContent =
+                    diet.suggestion || 'Focus on hitting your daily targets consistently. Prioritise whole foods, lean protein, and stay hydrated.';
+
+                // Weekly Plan
+                const plan = diet.weekly_plan;
+                if (plan) {
+                    window.weeklyPlanData = plan; // save globally for tab switching
+                    const daysTabs = document.getElementById('days-tabs');
+                    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+                    
+                    daysTabs.innerHTML = days.map(day => 
+                        `<button class="tab-btn" id="tab-${day}" onclick="renderMealsForDay('${day}')">${day}</button>`
+                    ).join('');
+                    
+                    // Style the tab buttons dynamically
+                    if (!document.getElementById('tab-styles')) {
+                        const style = document.createElement('style');
+                        style.id = 'tab-styles';
+                        style.textContent = `
+                            .tab-btn {
+                                background: rgba(255,255,255,0.05);
+                                border: 1px solid var(--border-light);
+                                color: var(--text-muted);
+                                padding: 8px 16px;
+                                border-radius: 20px;
+                                cursor: pointer;
+                                transition: all 0.2s;
+                                font-weight: 600;
+                                white-space: nowrap;
+                            }
+                            .tab-btn:hover {
+                                background: rgba(255,255,255,0.1);
+                                color: white;
+                            }
+                            .tab-btn.active {
+                                background: var(--accent);
+                                color: black;
+                                border-color: var(--accent);
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                    
+                    renderMealsForDay("Monday"); // default
+                }
+
+            } catch (err) {
+                console.error(err);
+                if (err.message === 'Profile not found') {
+                    window.location.href = 'profile.html';
+                } else {
+                    showToast('Error loading diet plan.', 'error');
+                }
+            } finally {
+                hideLoadingSpinner('diet-content');
+            }
+        }
+
+        function renderMealsForDay(day) {
+            // Update active tab
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-' + day).classList.add('active');
+            
+            const meals = window.weeklyPlanData[day] || [];
+            const recipeGrid = document.getElementById('recipe-grid');
+            
+            if(meals.length === 0) {
+                recipeGrid.innerHTML = '<div style="color:var(--text-muted);">No meals planned.</div>';
+                return;
+            }
+            
+            recipeGrid.innerHTML = meals.map(meal => `
+                <a href="${meal.url}" target="_blank" rel="noopener" class="recipe-card">
+                    <img src="${meal.image}" alt="${meal.title}" class="recipe-image"
+                         onerror="this.style.background='rgba(59,130,246,0.1)'; this.removeAttribute('src');">
+                    <div class="recipe-body">
+                        <div style="font-size: 0.7rem; color: var(--accent); text-transform: uppercase; font-weight: 800; margin-bottom: 4px;">${meal.type}</div>
+                        <h4 title="${meal.title}">${meal.title}</h4>
+                        <div class="recipe-cal-pill">
+                            <i data-lucide="flame" style="width:12px;height:12px;"></i>
+                            ${meal.calories} kcal
+                        </div>
+                        <div class="recipe-view-btn">View Recipe →</div>
+                    </div>
+                </a>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        async function submitDietLog() {
+            const inputEl = document.getElementById('nlp-diet-input');
+            const btnEl = document.getElementById('btn-log-diet');
+            const text = inputEl.value.trim();
+            if(!text) return;
+            
+            const originalBtnText = btnEl.innerHTML;
+            btnEl.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> Logging...';
+            btnEl.disabled = true;
+            lucide.createIcons();
+            
+            try {
+                const response = await apiCall('/log-diet-nlp', 'POST', { text: text });
+                showToast(`Logged ${response.food_name}: ${response.calories} kcal`, 'success');
+                inputEl.value = '';
+                loadTodayDietLogs();
+            } catch (err) {
+                console.error(err);
+                showToast('Error logging meal: ' + err.message, 'error');
+            } finally {
+                btnEl.innerHTML = originalBtnText;
+                btnEl.disabled = false;
+            }
+        }
+
+        async function loadTodayDietLogs() {
+            try {
+                const logs = await apiCall('/diet-logs');
+                const listEl = document.getElementById('diet-logs-list');
+                
+                if (logs.length === 0) {
+                    listEl.innerHTML = '<div style="color:var(--text-muted); font-size: 0.85rem;">No meals logged today.</div>';
+                    return;
+                }
+                
+                listEl.innerHTML = logs.map(log => `
+    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-light);">
+    
+    <div>
+        <div style="font-weight: 600; font-size: 0.95rem;">
+            ${log.food_name}
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">
+            Protein: ${log.protein ?? 0}g | Carbs: ${log.carbs ?? 0}g | Fat: ${log.fat ?? 0}g
+        </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px;">
+        
+        <div class="recipe-cal-pill" style="margin: 0;">
+            <i data-lucide="flame" style="width:12px;height:12px;"></i>
+            ${log.calories} kcal
+        </div>
+
+        <button onclick="deleteDietLog(${log.id})"
+            style="
+                background: rgba(255,0,0,0.15);
+                border: 1px solid rgba(255,0,0,0.3);
+                color: red;
+                padding: 6px 10px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 12px;
+            ">
+            Delete
+        </button>
+
+    </div>
+</div>
+
+    </div>
+`).join('');
+                lucide.createIcons();
+                
+                // Extra: Update macro UI by summing today's logs and subtracting from targets.
+                // For simplicity, we just show them logged here.
+            } catch (err) {
+                console.error("Failed to fetch logs", err);
+            }
+        }
+
+        if (getToken()) {
+            loadDiet();
+            loadTodayDietLogs();
+        }
+        async function deleteDietLog(logId) {
+    try {
+        await apiCall(`/diet-logs/${logId}`, 'DELETE');
+        showToast("Meal deleted successfully", "success");
+        loadTodayDietLogs(); // refresh list
+    } catch (err) {
+        console.error(err);
+        showToast("Failed to delete meal", "error");
+    }
+}
+    </script>
+</body>
+</html>
